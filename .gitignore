@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.env.production
+.env.staging
+*.log
+coverage/
+.nyc_output/
+prisma/migrations/*.db
