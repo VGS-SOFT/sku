@@ -7,6 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ── Enums ──────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+enum ImportStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
 // ── Users ──────────────────────────────────────────────────────────────────
 
 model User {
@@ -21,10 +35,9 @@ model User {
   skus         Sku[]
   auditLogs    AuditLog[]
   templates    SkuTemplate[]
+
   @@index([email])
 }
-
-enum Role { ADMIN STAFF }
 
 // ── Masters ────────────────────────────────────────────────────────────────
 
@@ -38,6 +51,7 @@ model Master {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   categories  Category[]
+
   @@index([code])
   @@index([sortOrder])
 }
@@ -61,6 +75,7 @@ model Category {
   parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id])
   children    Category[] @relation("CategoryTree")
   skus        Sku[]
+
   @@unique([code, parentId])
   @@index([masterId])
   @@index([parentId])
@@ -81,6 +96,7 @@ model VariantType {
   updatedAt   DateTime       @updatedAt
   values      VariantValue[]
   skuVariants SkuVariant[]
+
   @@index([sortOrder])
 }
 
@@ -95,6 +111,7 @@ model VariantValue {
   createdAt     DateTime     @default(now())
   variantType   VariantType  @relation(fields: [variantTypeId], references: [id], onDelete: Cascade)
   skuVariants   SkuVariant[]
+
   @@unique([code, variantTypeId])
   @@index([variantTypeId])
 }
@@ -115,6 +132,7 @@ model Sku {
   category    Category     @relation(fields: [categoryId], references: [id])
   createdBy   User         @relation(fields: [createdById], references: [id])
   variants    SkuVariant[]
+
   @@index([categoryId])
   @@index([createdById])
   @@index([isActive])
@@ -129,6 +147,7 @@ model SkuVariant {
   sku            Sku          @relation(fields: [skuId], references: [id], onDelete: Cascade)
   variantType    VariantType  @relation(fields: [variantTypeId], references: [id])
   variantValue   VariantValue @relation(fields: [variantValueId], references: [id])
+
   @@unique([skuId, variantTypeId])
   @@index([variantTypeId])
   @@index([variantValueId])
@@ -149,14 +168,13 @@ model ImportJob {
   completedAt DateTime?
 }
 
-enum ImportStatus { PENDING PROCESSING COMPLETED FAILED }
-
 model ImportKeyword {
   id         Int    @id @default(autoincrement())
   keyword    String @unique
-  entityType String // 'category' | 'variant_value'
+  entityType String
   entityId   Int
   priority   Int    @default(0)
+
   @@index([entityType, entityId])
   @@index([priority])
 }
@@ -190,6 +208,7 @@ model AuditLog {
   userAgent  String?  @db.Text
   createdAt  DateTime @default(now())
   user       User?    @relation(fields: [userId], references: [id])
+
   @@index([entityType, entityId])
   @@index([userId])
   @@index([createdAt])
